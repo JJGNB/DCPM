@@ -1,0 +1,253 @@
+name: DCPM_pred_x0_useS0DOLP_restormerLN_t4_pdot3_k2_noiseleveldot2_seed2024_nolq
+model_type: DDCPMRSModel
+timestep: 4 # number of timesteps for diffusion process
+device: 'cuda'
+scale: 1
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+gpu_id: "0" # set gpu_id: "0" for single GPU mode
+manual_seed: 2024 # random seed for initialization
+use_lq: false # set it to true if you have low-quality images as input
+use_cpfa: false
+use_vae: false
+# use_unet: "RDDM"
+use_unet: "Resshift"
+# dataset and data loader settings
+datasets:
+  train:
+    name: CPDM
+    type: CPDMImageDataset
+    params:
+      name: CPDM
+      data_source:
+        source1:
+          use_lq: False
+          use_cpfa: False
+          dataroot_gt_0: datasets/train/PSR/Tokyo2_gt_512/gt_0
+          dataroot_gt_45: datasets/train/PSR/Tokyo2_gt_512/gt_45
+          dataroot_gt_90: datasets/train/PSR/Tokyo2_gt_512/gt_90
+          dataroot_gt_135: datasets/train/PSR/Tokyo2_gt_512/gt_135
+          dataroot_lq_0: datasets/train/PSR/Tokyo2_gt_512/gt_0
+          dataroot_lq_45: datasets/train/PSR/Tokyo2_gt_512/gt_45
+          dataroot_lq_90: datasets/train/PSR/Tokyo2_gt_512/gt_90
+          dataroot_lq_135: datasets/train/PSR/Tokyo2_gt_512/gt_135
+          dataroot_lq_cpfa: datasets/train/PSR/Tokyo2_gt_512/gt_135
+          meta_info_file: ~
+          filename_tmpl: '{}'
+          io_backend:
+            type: disk
+        source2:
+          use_lq: False
+          use_cpfa: False
+          dataroot_gt_0: datasets/train/PSR/PIDSR_aug/gt_0
+          dataroot_gt_45: datasets/train/PSR/PIDSR_aug/gt_45
+          dataroot_gt_90: datasets/train/PSR/PIDSR_aug/gt_90
+          dataroot_gt_135: datasets/train/PSR/PIDSR_aug/gt_135
+          dataroot_lq_0: datasets/train/PSR/PIDSR_aug/gt_0
+          dataroot_lq_45: datasets/train/PSR/PIDSR_aug/gt_45
+          dataroot_lq_90: datasets/train/PSR/PIDSR_aug/gt_90
+          dataroot_lq_135: datasets/train/PSR/PIDSR_aug/gt_135
+          dataroot_lq_cpfa: datasets/train/PSR/PIDSR_aug/gt_135
+          meta_info_file: ~
+          filename_tmpl: '{}'
+          io_backend:
+            type: disk
+        # source3:
+        #   use_lq: False
+        #   use_cpfa: False
+        #   dataroot_gt_0: datasets/train/PSR/Wu_aug/gt_0
+        #   dataroot_gt_45: datasets/train/PSR/Wu_aug/gt_45
+        #   dataroot_gt_90: datasets/train/PSR/Wu_aug/gt_90
+        #   dataroot_gt_135: datasets/train/PSR/Wu_aug/gt_135
+        #   dataroot_lq_0: datasets/train/PSR/Wu_aug/gt_0
+        #   dataroot_lq_45: datasets/train/PSR/Wu_aug/gt_45
+        #   dataroot_lq_90: datasets/train/PSR/Wu_aug/gt_90
+        #   dataroot_lq_135: datasets/train/PSR/Wu_aug/gt_135
+        #   dataroot_lq_cpfa: datasets/train/PSR/Wu_aug/gt_135
+        #   meta_info_file: ~
+        #   filename_tmpl: '{}'
+        #   io_backend:
+        #     type: disk
+
+    # data loader
+    num_worker_per_gpu: 8
+    batch_size_per_gpu: 2
+    dataset_enlarge_ratio: 1
+    ### -------------Progressive training--------------------------
+    mini_batch_sizes: [2,2,2]             # Batch size per gpu
+    iters: [150000,30000,20000]
+    gt_size: 512   # Max patch size for progressive training
+    gt_sizes: [256,320,384]  # Patch sizes for progressive training.
+    prefetch_mode: ~
+    # pin_memory: true
+
+  val:
+    name: CPDM
+    type: CPDMImageDataset
+    params:
+      name: CPDM
+      data_source:
+        source1:
+          use_lq: False
+          use_cpfa: False
+          dataroot_gt_0: datasets/eval/PSR/Tokyo2_gt_512/gt_0
+          dataroot_gt_45: datasets/eval/PSR/Tokyo2_gt_512/gt_45
+          dataroot_gt_90: datasets/eval/PSR/Tokyo2_gt_512/gt_90
+          dataroot_gt_135: datasets/eval/PSR/Tokyo2_gt_512/gt_135
+          dataroot_lq_0: datasets/eval/PSR/Tokyo2_gt_512/gt_0
+          dataroot_lq_45: datasets/eval/PSR/Tokyo2_gt_512/gt_45
+          dataroot_lq_90: datasets/eval/PSR/Tokyo2_gt_512/gt_90
+          dataroot_lq_135: datasets/eval/PSR/Tokyo2_gt_512/gt_135
+          dataroot_lq_cpfa: datasets/eval/PSR/Tokyo2_gt_512/gt_135
+          meta_info_file: ~
+          filename_tmpl: '{}'
+          io_backend:
+            type: disk
+        # source2:
+        #   use_lq: False
+        #   use_cpfa: False
+        #   dataroot_gt_0: datasets/eval/PSR/PIDSR_aug/gt_0
+        #   dataroot_gt_45: datasets/eval/PSR/PIDSR_aug/gt_45
+        #   dataroot_gt_90: datasets/eval/PSR/PIDSR_aug/gt_90
+        #   dataroot_gt_135: datasets/eval/PSR/PIDSR_aug/gt_135
+        #   dataroot_lq_0: datasets/eval/PSR/PIDSR_aug/gt_0
+        #   dataroot_lq_45: datasets/eval/PSR/PIDSR_aug/gt_45
+        #   dataroot_lq_90: datasets/eval/PSR/PIDSR_aug/gt_90
+        #   dataroot_lq_135: datasets/eval/PSR/PIDSR_aug/gt_135
+        #   dataroot_lq_cpfa: datasets/eval/PSR/PIDSR_aug/gt_135
+        #   meta_info_file: ~
+        #   filename_tmpl: '{}'
+        #   io_backend:
+        #     type: disk
+Unet:
+    params:
+      image_size: 64
+      task_type: "CPDM"
+      use_res: False
+      use_multout: False
+      in_channels: 12
+      model_channels: 160
+      out_channels: 12
+      attention_resolutions: [64,32,16,8]
+      dropout: 0
+      channel_mult: [1, 2, 2, 4]
+      num_res_blocks: [2, 2, 2, 2]
+      conv_resample: True
+      dims: 2
+      use_fp16: False
+      num_head_channels: 32
+      use_scale_shift_norm: True
+      resblock_updown: False
+      use_restormer: True
+      swin_depth: 2
+      swin_embed_dim: 192
+      window_size: 8
+      mlp_ratio: 4
+      cond_lq: True
+      lq_size: 64
+Diff:
+  params:
+    mse_after_vae: false
+    use_y_latent: true
+    sf: 1
+    schedule_name: exponential
+    schedule_kwargs:
+      power: 0.3
+      # power: 3
+    etas_end: 0.99
+    steps: 4
+    min_noise_level: 0.2
+    # min_noise_level: 0.04
+    kappa: 2.0
+    # kappa: 0
+    # kappa: 0.02
+    weighted_mse: False
+    predict_type: xstart
+    # predict_type: epsilon
+    # predict_type: residual
+    timestep_respacing: ~
+    scale_factor: 1.0
+    normalize_input: True
+    latent_flag: True
+
+# path
+path:
+
+  pretrain_network_g: ~
+  pretrain_network_ema: ~
+  param_key_g: param
+  strict_load_g: true
+  resume_state: ~
+
+# training settings
+train:
+  load_lo: true
+  ema_decay: 0.999
+  optim_g:
+    type: Adam
+    lr: !!float 5e-5
+    weight_decay: 0
+    betas: [0.9, 0.999]
+
+  scheduler:
+    type: CosineAnnealingLR
+    eta_min: !!float 2e-5
+    warmup_iterations: 5000
+
+  total_iter: 150000
+  warmup_iter: 3000
+
+  losses:
+  pixel_opt:
+    type: L2Loss
+    loss_weight: 0.5
+    reduction: mean
+# validation settings
+val:
+  val_freq: !!float 1e4
+  save_img: true
+  save_img_freq: 1
+  metrics:
+    psnr:
+      type: calculate_psnr
+      crop_border: 4
+      test_y_channel: false
+      better: higher  # the higher, the better. Default: higher
+    psnr_dolp:
+      type: calculate_psnr_dolp
+      crop_border: 4
+      test_y_channel: false
+      better: higher  # the higher, the better. Default: higher
+    psnr_S0:
+      type: calculate_psnr_S0
+      crop_border: 4
+      test_y_channel: false
+      better: higher  # the higher, the better. Default: higher
+    ssim:
+      type: calculate_ssim
+      crop_border: 4
+      test_y_channel: false
+      better: higher  # the higher, the better. Default: higher
+    ssim_dolp:
+      type: calculate_ssim_dolp
+      crop_border: 4
+      test_y_channel: false
+      better: higher  # the higher, the better. Default: higher
+    ssim_S0:
+      type: calculate_ssim_S0
+      crop_border: 4
+      test_y_channel: false
+      better: higher  # the higher, the better. Default: higher
+
+# logging settings
+logger:
+  print_freq: 10
+  save_checkpoint_freq: !!float 1e4
+  use_tb_logger: true
+  wandb:
+    project: ~
+    resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500
