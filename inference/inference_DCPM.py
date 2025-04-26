@@ -26,7 +26,7 @@ def fast_inference(root_path):
     use_lq=opt['use_lq']
     real_cpdm=opt['real_cpdm']
     chop_size=opt['datasets']['chop_size']
-    improve_contrast=opt['datasets']['val']['improve_contrast']
+    improve_contrast=opt['datasets']['save_path']['improve_contrast']
     if real_cpdm:
         gt_path_cpfa=opt['datasets']['val']['dataroot_gt_cpfa']
         output_path_0=opt['datasets']['save_path']['img_0']
