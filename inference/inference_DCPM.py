@@ -117,7 +117,7 @@ def fast_inference(root_path):
                 start_event = torch.cuda.Event(enable_timing=True)
                 end_event = torch.cuda.Event(enable_timing=True)
                 start_event.record()
-                im_sr_tensor,_ =net_g.p_sample_loop(
+                im_sr_tensor =net_g.p_sample_loop(
                     y=lq,
                     model=model,
                     first_stage_model=backbone,

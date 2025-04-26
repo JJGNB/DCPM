@@ -510,11 +510,7 @@ class GaussianDiffusion:
         :return: a non-differentiable batch of samples.
         """
         final = None
-        y_0=y[:,0:3,:,:]
-        y_45=y[:,3:6,:,:]
-        y_90=y[:,6:9,:,:]
-        y_135=y[:,9:12,:,:]
-        y=torch.concat([y_0,y_45,y_90,y_135],dim=0)
+        y=chunkdim2batch(y)
         for sample in self.p_sample_loop_progressive(
             y,
             model,
@@ -529,39 +525,15 @@ class GaussianDiffusion:
             progress=progress,
         ):
             final = sample["sample"]
-            pred_x0 = sample["pred_xstart"]
-        final_0=final[:,0:3,:,:]
-        final_45=final[:,3:6,:,:]
-        final_90=final[:,6:9,:,:]
-        final_135=final[:,9:12,:,:]
-        final=torch.concat([final_0,final_45,final_90,final_135],dim=0)
+        final=chunkdim2batch(final)
         with th.no_grad():
             output = self.decode_first_stage(
                     final,
                     first_stage_model=first_stage_model,
                     consistencydecoder=consistencydecoder,
                     ).clamp(-1.0, 1.0)
-            output_0=output[0:1,:,:,:]
-            output_45=output[1:2,:,:,:]
-            output_90=output[2:3,:,:,:]
-            output_135=output[3:4,:,:,:]
-            output=torch.concat([output_0,output_45,output_90,output_135],dim=1)
-            pred_x0_0=pred_x0[:,0:3,:,:]
-            pred_x0_45=pred_x0[:,3:6,:,:]
-            pred_x0_90=pred_x0[:,6:9,:,:]
-            pred_x0_135=pred_x0[:,9:12,:,:]
-            pred_x0=torch.concat([pred_x0_0,pred_x0_45,pred_x0_90,pred_x0_135],dim=0)
-            pred_x0 = self.decode_first_stage(
-                    pred_x0,
-                    first_stage_model=first_stage_model,
-                    consistencydecoder=consistencydecoder,
-                    ).clamp(-1.0, 1.0)
-            pred_x0_0=pred_x0[0:1,:,:,:]
-            pred_x0_45=pred_x0[1:2,:,:,:]
-            pred_x0_90=pred_x0[2:3,:,:,:]
-            pred_x0_135=pred_x0[3:4,:,:,:]
-            pred_x0=torch.concat([pred_x0_0,pred_x0_45,pred_x0_90,pred_x0_135],dim=1)
-        return output,pred_x0
+            output=chunkbatch2dim(output)
+        return output
 
     def p_sample_loop_progressive(
             self, y, model,
